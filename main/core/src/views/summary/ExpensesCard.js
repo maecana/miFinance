@@ -27,8 +27,11 @@ import {
     Popper,
     Stack,
     // Switch,
-    Typography
+    Typography,
+    Button,
 } from '@mui/material';
+
+import { DataGrid } from '@mui/x-data-grid';
 
 // third-party
 // import PerfectScrollbar from 'react-perfect-scrollbar';
@@ -39,30 +42,30 @@ import { Formik } from 'formik';
 import { gridSpacing } from 'store/constant';
 import MainCard from 'ui-component/cards/MainCard';
 import Transitions from 'ui-component/extended/Transitions';
+import AnimateButton from 'ui-component/extended/AnimateButton';
+import { collection, addDoc, getDocs } from 'firebase/firestore';
+import { db } from 'firebase-config';
+import useScriptRef from 'hooks/useScriptRef';
 
 
 // assets
 import AddCircleOutlineOutlinedIcon from '@mui/icons-material/AddCircleOutlineOutlined';
 // import { IconLogout, IconSearch, IconSettings, IconUser } from '@tabler/icons-react';
 
+const columns = [
+    { field: 'category', headerName: 'Category', width: 130 },
+    { field: 'amount', headerName: 'Amount', width: 130 },
+    { field: 'actual', headerName: 'Actual', width: 130 }
+];
 
 const ExpensesCard = () => {
     const theme = useTheme();
-    // const customization = useSelector((state) => state.customization);
-    // const navigate = useNavigate();
-
-    // const [sdm, setSdm] = useState(true);
-    // const [value, setValue] = useState('');
-    // const [notification, setNotification] = useState(false);
-    // const [selectedIndex, setSelectedIndex] = useState(-1);
+    const scriptedRef = useScriptRef();
     const [open, setOpen] = useState(false);
     /**
      * anchorRef is used on different componets and specifying one type leads to other components throwing an error
      * */
     const anchorRef = useRef(null);
-    // const handleLogout = async () => {
-    //     console.log('Logout');
-    // };
 
     const handleClose = (event) => {
         if (anchorRef.current && anchorRef.current.contains(event.target)) {
@@ -71,14 +74,6 @@ const ExpensesCard = () => {
         setOpen(false);
     };
 
-    // const handleListItemClick = (event, index, route = '') => {
-    //     setSelectedIndex(index);
-    //     handleClose(event);
-
-    //     if (route && route !== '') {
-    //         navigate(route);
-    //     }
-    // };
     const handleToggle = () => {
         setOpen((prevOpen) => !prevOpen);
     };
@@ -92,6 +87,35 @@ const ExpensesCard = () => {
         prevOpen.current = open;
     }, [open]);
 
+
+    // firebase fetch
+
+    const [rows, setRows] = useState([]);
+
+    const fetchData = async () => {
+        try {
+            const querySnapshot = await getDocs(collection(db, 'Expenses'));
+            const data = querySnapshot.docs.map(doc => ({ 
+                id: doc.id, 
+                ...doc.data(),
+                ...doc.data().Planned
+            }));
+            console.log('Data:', data);
+            setRows(data);
+        } catch (error) {
+            console.error('Error fetching data from Firestore:', error);
+        }
+    };
+
+    useEffect(() => {
+        
+        fetchData();
+
+        // Clean up function
+        return () => {
+            // Cleanup if necessary
+        };
+    }, []); // Empty dependency array to run only once on mount
 
     return (
         <MainCard content={false}>
@@ -114,7 +138,7 @@ const ExpensesCard = () => {
                                     aria-haspopup="true"
                                     onClick={handleToggle}
                                 />
-                                <Popper
+                                <Popper style={{ position: 'relative', zIndex: 2 }}
                                     placement="bottom-end"
                                     open={open}
                                     anchorEl={anchorRef.current}
@@ -154,13 +178,23 @@ const ExpensesCard = () => {
                                                                 validationSchema={Yup.object().shape({
                                                                     category: Yup.string().max(50).required('Category is required'),
                                                                     amount: Yup.number().typeError('Invalid input, please enter a number')
-                                                                        .positive('Number must be greater than zero').max(8).required('Category is required')
+                                                                        .positive('Number must be greater than zero').required('Category is required')
                                                                 })}
                                                                 onSubmit={async (values, { setErrors, setStatus, setSubmitting }) => {
                                                                     try {
                                                                         if (scriptedRef.current) {
+                                                                            const docRef = await addDoc(collection(db, 'Expenses'), {
+                                                                                Planned: {
+                                                                                    category: values.category,
+                                                                                    amount: values.amount,
+                                                                                }
+                                                                            });
+                                                                            console.log('Document written with ID: ', docRef.id);
                                                                             setStatus({ success: true });
                                                                             setSubmitting(false);
+
+                                                                            fetchData();
+                                                                            setOpen(false);
                                                                         }
                                                                     } catch (err) {
                                                                         console.error(err);
@@ -172,7 +206,7 @@ const ExpensesCard = () => {
                                                                     }
                                                                 }}
                                                             >
-                                                                {({ errors, handleBlur, handleChange, handleSubmit, touched, values }) => (
+                                                                {({ errors, handleBlur, handleChange, handleSubmit, touched, isSubmitting, values }) => (
                                                                     <form noValidate onSubmit={handleSubmit}>
                                                                         <FormControl error={Boolean(touched.category && errors.category)} fullWidth sx={{ ...theme.typography.customInput }}>
                                                                             <InputLabel htmlFor="expenses-category">Category</InputLabel>
@@ -210,6 +244,13 @@ const ExpensesCard = () => {
                                                                                 </FormHelperText>
                                                                             )}
                                                                         </FormControl>
+                                                                        <Box sx={{ mt: 2 }}>
+                                                                            <AnimateButton>
+                                                                                <Button disableElevation disabled={isSubmitting} fullWidth size="large" type="submit" variant="contained" color="secondary">
+                                                                                    Add
+                                                                                </Button>
+                                                                            </AnimateButton>
+                                                                        </Box>
                                                                     </form>
                                                                 )}
                                                             </Formik>
@@ -221,6 +262,21 @@ const ExpensesCard = () => {
                                     )}
                                 </Popper>
                             </Grid>
+                        </Grid>
+                    </Grid>
+                    <Grid item xs={12}>
+                        <Grid container>
+                            <DataGrid
+                                rows={rows}
+                                columns={columns}
+                                initialState={{
+                                    pagination: {
+                                        paginationModel: { page: 0, pageSize: 5 },
+                                    },
+                                }}
+                                pageSizeOptions={[5, 10]}
+                                checkboxSelection
+                            />
                         </Grid>
                     </Grid>
                 </Grid>
