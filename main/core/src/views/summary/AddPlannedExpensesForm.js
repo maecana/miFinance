@@ -24,10 +24,9 @@ const AddPlannedExpensesForm = ({ setOpen, fetchData }) => {
             if (scriptedRef.current) {
                 setSubmitting(true);
                 const docRef = await addDoc(collection(db, 'Expenses'), {
-                    Planned: {
-                        category: values.category,
-                        amount: values.amount,
-                    }
+                    category: values.category,
+                    plannedAmount: values.amount,
+                    actualAmount: []
                 });
                 console.log('Document written with ID: ', docRef.id);
                 setStatus({ success: true });
@@ -49,12 +48,14 @@ const AddPlannedExpensesForm = ({ setOpen, fetchData }) => {
         <Formik
             initialValues={{
                 category: '',
-                amount: 0,
+                amount: 0
             }}
             validationSchema={Yup.object().shape({
                 category: Yup.string().max(50).required('Category is required'),
-                amount: Yup.number().typeError('Invalid input, please enter a number')
-                    .positive('Number must be greater than zero').required('Category is required')
+                amount: Yup.number()
+                    .typeError('Invalid input, please enter a number')
+                    .positive('Number must be greater than zero')
+                    .required('Category is required')
             })}
             onSubmit={handleSubmit}
         >
@@ -64,7 +65,7 @@ const AddPlannedExpensesForm = ({ setOpen, fetchData }) => {
                         <InputLabel htmlFor="expenses-category">Category</InputLabel>
                         <OutlinedInput
                             id="expenses-category"
-                            type='text'
+                            type="text"
                             value={values.category}
                             name="category"
                             onBlur={handleBlur}
@@ -82,7 +83,7 @@ const AddPlannedExpensesForm = ({ setOpen, fetchData }) => {
                         <InputLabel htmlFor="expenses-amount">Amount</InputLabel>
                         <OutlinedInput
                             id="expenses-amount"
-                            type='text'
+                            type="text"
                             value={values.amount}
                             name="amount"
                             onBlur={handleBlur}

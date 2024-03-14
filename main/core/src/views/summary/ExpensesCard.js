@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 // material-ui
 import { useTheme } from '@mui/material/styles';
-import { Typography, Grid, Box } from '@mui/material';
+import { Typography, Grid, CardContent } from '@mui/material';
 import AddCircleOutlineOutlinedIcon from '@mui/icons-material/AddCircleOutlineOutlined';
 
 // project imports
@@ -20,11 +20,18 @@ const ExpensesCard = () => {
     const fetchData = async () => {
         try {
             const querySnapshot = await getDocs(collection(db, 'Expenses'));
-            const data = querySnapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data(),
-                ...doc.data().Planned
-            }));
+            const data = querySnapshot.docs.map((doc) => {
+                const docData = doc.data();
+
+                const sumOfActual = docData.actual ? docData.actual.reduce((acc, curr) => acc + curr, 0) : 0;
+                const difference = docData.plannedAmount - sumOfActual;
+                return {
+                    id: doc.id,
+                    ...docData,
+                    sumOfActual: sumOfActual,
+                    difference: difference
+                };
+            });
             console.log('Data:', data);
             setRows(data);
         } catch (error) {
@@ -58,30 +65,34 @@ const ExpensesCard = () => {
 
     return (
         <MainCard content={false}>
-            <Grid container spacing={2} alignItems="center">
-                <Grid item xs={12}>
-                    <Box display="flex" justifyContent="space-between" alignItems="center">
-                        <Typography variant="h3">Expenses</Typography>
-                        <AddCircleOutlineOutlinedIcon
-                            fontSize="medium"
-                            sx={{
-                                color: theme.palette.primary[200],
-                                cursor: 'pointer'
-                            }}
-                            ref={anchorRef}
-                            aria-controls={open ? 'menu-list-grow' : undefined}
-                            aria-haspopup="true"
-                            onClick={handleToggle}
-                        />
-                    </Box>
+            <CardContent>
+                <Grid container spacing={2} alignItems="center">
+                    <Grid item xs={12}>
+                        <Grid container alignContent="center" justifyContent="space-between">
+                            <Grid item>
+                                <Typography variant="h3">Expenses</Typography>
+                            </Grid>
+                            <Grid item>
+                                <AddCircleOutlineOutlinedIcon
+                                    fontSize="medium"
+                                    sx={{
+                                        color: theme.palette.primary[200],
+                                        cursor: 'pointer'
+                                    }}
+                                    ref={anchorRef}
+                                    aria-controls={open ? 'menu-list-grow' : undefined}
+                                    aria-haspopup="true"
+                                    onClick={handleToggle}
+                                />
+                                <ExpensePopper open={open} anchorRef={anchorRef} setOpen={setOpen} handleClose={handleClose} fetchData={fetchData} />
+                            </Grid>
+                        </Grid>
+                    </Grid>
+                    <Grid item xs={12}>
+                        <ExpenseTable rows={rows} />
+                    </Grid>
                 </Grid>
-                <Grid item xs={12}>
-                    <ExpensePopper open={open} anchorRef={anchorRef} handleClose={handleClose} fetchData={fetchData} />
-                </Grid>
-                <Grid item xs={12}>
-                    <ExpenseTable rows={rows} />
-                </Grid>
-            </Grid>
+            </CardContent>
         </MainCard>
     );
 };
