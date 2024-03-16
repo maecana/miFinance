@@ -8,7 +8,7 @@ const columns = [
     { field: 'difference', headerName: 'Difference', width: 130 }
 ];
 
-const ExpenseTable = ({ rows }) => {
+const SummaryTable = ({ rows }) => {
     return (
         <DataGrid
             rows={rows}
@@ -24,4 +24,4 @@ const ExpenseTable = ({ rows }) => {
     );
 };
 
-export default ExpenseTable;
+export default SummaryTable;

@@ -14,7 +14,7 @@ import { addDoc, collection } from 'firebase/firestore';
 import { db } from 'firebase-config';
 import useScriptRef from 'hooks/useScriptRef';
 
-const AddPlannedExpensesForm = ({ setOpen, fetchData }) => {
+const AddPlannedExpensesForm = ({ entity, setOpen, fetchData }) => {
     const theme = useTheme();
     const scriptedRef = useScriptRef();
     const [submitting, setSubmitting] = useState(false);
@@ -23,7 +23,7 @@ const AddPlannedExpensesForm = ({ setOpen, fetchData }) => {
         try {
             if (scriptedRef.current) {
                 setSubmitting(true);
-                const docRef = await addDoc(collection(db, 'Expenses'), {
+                const docRef = await addDoc(collection(db, entity), {
                     category: values.category,
                     plannedAmount: values.amount,
                     actualAmount: []

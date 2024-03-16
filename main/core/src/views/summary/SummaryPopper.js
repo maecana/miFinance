@@ -7,9 +7,9 @@ import { useTheme } from '@mui/material/styles';
 // project imports
 import MainCard from 'ui-component/cards/MainCard';
 import Transitions from 'ui-component/extended/Transitions';
-import AddPlannedExpensesForm from './AddPlannedExpensesForm';
+import SummaryAddPlannedForm from './SummaryAddPlannedForm';
 
-const ExpensePopper = ({ open, anchorRef, handleClose, fetchData, setOpen }) => {
+const SummaryPopper = ({ entity, formTitle, description, open, anchorRef, handleClose, fetchData, setOpen }) => {
     const theme = useTheme();
     return (
         <Popper
@@ -39,12 +39,12 @@ const ExpensePopper = ({ open, anchorRef, handleClose, fetchData, setOpen }) => 
                                 <Box sx={{ p: 2 }}>
                                     <Stack sx={{ p: 2 }}>
                                         <Stack direction="row" spacing={0.5} alignItems="center">
-                                            <Typography variant="h4">Add Planned Expenses</Typography>
+                                            <Typography variant="h4">{formTitle}</Typography>
                                         </Stack>
-                                        <Typography variant="subtitle2">This is your expected expenses this month.</Typography>
+                                        <Typography variant="subtitle2">{description}</Typography>
                                     </Stack>
                                     <Divider sx={{ pt: 2 }} />
-                                    <AddPlannedExpensesForm setOpen={setOpen} fetchData={fetchData} />
+                                    <SummaryAddPlannedForm entity={entity} setOpen={setOpen} fetchData={fetchData} />
                                 </Box>
                             </MainCard>
                         </ClickAwayListener>
@@ -55,4 +55,4 @@ const ExpensePopper = ({ open, anchorRef, handleClose, fetchData, setOpen }) => 
     );
 };
 
-export default ExpensePopper;
+export default SummaryPopper;
