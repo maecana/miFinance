@@ -8,10 +8,10 @@ import AddCircleOutlineOutlinedIcon from '@mui/icons-material/AddCircleOutlineOu
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from 'firebase-config';
 import MainCard from 'ui-component/cards/MainCard';
-import ExpenseTable from './ExpenseTable';
-import ExpensePopper from './ExpensePopper';
+import SummaryTable from './SummaryTable';
+import SummaryPopper from './SummaryPopper';
 
-const ExpensesCard = () => {
+const SummaryCard = ({ title, formTitle, description }) => {
     const theme = useTheme();
     const [open, setOpen] = useState(false);
     const anchorRef = useRef(null);
@@ -19,7 +19,7 @@ const ExpensesCard = () => {
 
     const fetchData = async () => {
         try {
-            const querySnapshot = await getDocs(collection(db, 'Expenses'));
+            const querySnapshot = await getDocs(collection(db, title));
             const data = querySnapshot.docs.map((doc) => {
                 const docData = doc.data();
 
@@ -70,7 +70,7 @@ const ExpensesCard = () => {
                     <Grid item xs={12}>
                         <Grid container alignContent="center" justifyContent="space-between">
                             <Grid item>
-                                <Typography variant="h3">Expenses</Typography>
+                                <Typography variant="h3">{title}</Typography>
                             </Grid>
                             <Grid item>
                                 <AddCircleOutlineOutlinedIcon
@@ -84,12 +84,12 @@ const ExpensesCard = () => {
                                     aria-haspopup="true"
                                     onClick={handleToggle}
                                 />
-                                <ExpensePopper open={open} anchorRef={anchorRef} setOpen={setOpen} handleClose={handleClose} fetchData={fetchData} />
+                                <SummaryPopper entity={title} formTitle={formTitle} description={description} open={open} anchorRef={anchorRef} setOpen={setOpen} handleClose={handleClose} fetchData={fetchData} />
                             </Grid>
                         </Grid>
                     </Grid>
                     <Grid item xs={12}>
-                        <ExpenseTable rows={rows} />
+                        <SummaryTable rows={rows} />
                     </Grid>
                 </Grid>
             </CardContent>
@@ -97,4 +97,4 @@ const ExpensesCard = () => {
     );
 };
 
-export default ExpensesCard;
+export default SummaryCard;

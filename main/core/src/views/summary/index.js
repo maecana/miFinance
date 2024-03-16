@@ -5,10 +5,11 @@ import { Grid } from '@mui/material';
 
 // project imports
 import { gridSpacing } from 'store/constant';
-import ExpensesCard from './ExpensesCard';
+import ExpensesCard from './SummaryCard';
 // ==============================|| DEFAULT DASHBOARD ||============================== //
 
 const Summary = () => {
+
   // const [isLoading, setLoading] = useState(true);
   // useEffect(() => {
   //     setLoading(false);
@@ -31,9 +32,19 @@ const Summary = () => {
       <Grid item xs={12}>
         <Grid container spacing={gridSpacing}>
           <Grid item xs={12} md={6}>
-            <ExpensesCard />
+            <ExpensesCard
+              formTitle={'Add Planned Expenses'}
+              description={'This is your expected expenses this month.'}
+              title={'Expenses'}
+            />
           </Grid>
-          <Grid item xs={12} md={6}></Grid>
+          <Grid item xs={12} md={6}>
+            <ExpensesCard
+              formTitle={'Add Income Expenses'}
+              description={'This is your expected income this month.'}
+              title={'Income'}
+            />
+          </Grid>
         </Grid>
       </Grid>
     </Grid>
